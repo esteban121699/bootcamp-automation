@@ -1,4 +1,5 @@
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.testng.annotations.AfterTest;
@@ -44,8 +45,12 @@ public class TestExercise1 extends Base {
         WebElement checkboxSport = driver.findElement(By.xpath("//*[@id=\"hobbiesWrapper\"]/div[2]/div[1]/label"));
         checkboxSport.click();
 
+        // Do scroll to element
+        WebElement currentAddressInput = driver.findElement(By.id("currentAddress"));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", currentAddressInput);
+
         // Set the value of the input type text
-        driver.findElement(By.id("currentAddress")).sendKeys("Villa el salvador");
+        currentAddressInput.sendKeys("Villa el salvador");
 
         // Set the value of the input type select
         WebElement selectState = driver.findElement(By.xpath("//*[@id=\"state\"]/div/div[1]"));
@@ -69,8 +74,9 @@ public class TestExercise1 extends Base {
         String titleDialog = driver.findElement(By.id("example-modal-sizes-title-lg")).getText();
 
         // Click event to close modal dialog
-        WebElement btnCloseDialog = driver.findElement(By.id("closeLargeModal"));
-        btnCloseDialog.click();
+        WebElement element = driver.findElement(By.id("closeLargeModal"));
+        JavascriptExecutor executor = (JavascriptExecutor)driver;
+        executor.executeScript("arguments[0].click();", element);
 
         // Compare obtained value and expected value
         String expectedTitle = "Thanks for submitting the form";
