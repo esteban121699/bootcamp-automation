@@ -9,4 +9,10 @@ public class Functions {
         int quantity = new Random().nextInt(max - min + 1) + min;
         return String.valueOf(quantity);
     }
+
+    public static double refactorPrice(String price){
+        String priceInText = price.replace("$", "");
+        double priceInNumber = Double.parseDouble(priceInText);
+        return priceInNumber;
+    }
 }

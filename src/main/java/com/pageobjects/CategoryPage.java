@@ -12,8 +12,8 @@ import java.util.List;
 public class CategoryPage {
     public final WebDriver driver;
 
-    @FindBy(xpath = "//span[@class='cat-name' and contains(.,'Women')]")
-    private WebElement lblCategoryName;
+    @FindBy(xpath = "//ul[contains(@class, 'product_list')]")
+    private WebElement productList;
 
     @FindBy(xpath = "//ul[contains(@class, 'product_list')]//li[contains(@class, 'ajax_block_product')]")
     private List<WebElement> productItems;
@@ -24,10 +24,7 @@ public class CategoryPage {
     public CategoryPage(WebDriver driver) {
         this.driver = driver;
         PageFactory.initElements(driver, this);
-    }
-
-    public void scrollToCategoryName() {
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", lblCategoryName);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", productList);
     }
 
     public void mouseOverToProductItem(int index) {
