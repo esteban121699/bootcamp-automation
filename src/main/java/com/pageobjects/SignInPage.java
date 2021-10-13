@@ -5,8 +5,14 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 
-public class AuthenticationPage {
+public class SignInPage {
     private final WebDriver driver;
+
+    @FindBy(id = "email_create")
+    private WebElement inputSignUpEmail;
+
+    @FindBy(id = "SubmitCreate")
+    private WebElement btnSignUpSubmit;
 
     @FindBy(id = "email")
     private WebElement inputSignInEmail;
@@ -17,7 +23,7 @@ public class AuthenticationPage {
     @FindBy(id = "SubmitLogin")
     private WebElement btnSignInSubmit;
 
-    public AuthenticationPage(WebDriver driver) {
+    public SignInPage(WebDriver driver) {
         this.driver = driver;
         PageFactory.initElements(driver, this);
     }
@@ -27,5 +33,11 @@ public class AuthenticationPage {
         inputSignInPassword.sendKeys(password);
 
         btnSignInSubmit.click();
+    }
+
+    public void fillRegisterForm(String email) {
+        inputSignUpEmail.sendKeys(email);
+
+        btnSignUpSubmit.click();
     }
 }

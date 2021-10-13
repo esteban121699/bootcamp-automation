@@ -1,38 +1,31 @@
 package com.automationpractice.shoppingtest;
 
 import com.automationpractice.Base;
+import com.automationpractice.utilities.Functions;
 import com.dataprovider.ShoppingCartDataProvider;
 import com.pageobjects.*;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import org.testng.asserts.SoftAssert;
 
-import static com.automationpractice.utilities.Functions.refactorPrice;
 import static com.dataprovider.GlobalDataProvider.*;
 
 public class ShoppingCart extends Base{
     private MainPage mainPage;
-    private AuthenticationPage authenticationPage;
+    private SignUpPage signUpPage;
+    private SignInPage signInPage;
     private MyAccountPage myAccountPage;
     private CategoryPage categoryPage;
     private ProductPage productPage;
     private OrderPage orderPage;
-    private int maxProductsCart;
-    private int expectedSizeThumbProductImages;
-    private String expectedTextOrderConfirmation;
-    private String expectedTextProductCounter;
+    private String formEmail;
+    private String formPassword;
 
     @BeforeTest
     public void initialize() {
         driver = initializeDriver();
+        // 1. Go to automationpractice.com
         mainPage = new MainPage(driver);
-        authenticationPage = new AuthenticationPage(driver);
-        maxProductsCart = MAX_PRODUCTS_CART;
-        expectedSizeThumbProductImages = EXPECTED_SIZE_THUMB_PRODUCT_IMAGES;
-        expectedTextOrderConfirmation = EXPECTED_TEXT_ORDER_CONFIRMATION;
-        expectedTextProductCounter = EXPECTED_TEXT_PRODUCT_COUNTER;
+        signInPage = new SignInPage(driver);
     }
 
     @BeforeMethod
@@ -41,21 +34,42 @@ public class ShoppingCart extends Base{
         mainPage.clickOnSignIn();
     }
 
-    @Test(dataProvider = "purchase process data", dataProviderClass = ShoppingCartDataProvider.class)
-    public void testPurchasingProcess(String email, String password, String message) {
+    @Test(dataProvider = "register account data", dataProviderClass = ShoppingCartDataProvider.class)
+    public void testRegisterAccount(String firstname, String lastname, String email, String password, String address, String city, String state, int zip, int phone) {
+
+        SoftAssert softAssert = new SoftAssert();
+
+        formEmail = email;
+        formPassword = password;
+
+        // 2. Register a new account
+
+        signInPage.fillRegisterForm(formEmail);
+
+        signUpPage = new SignUpPage(driver);
+        signUpPage.fillRegisterForm(firstname, lastname, formPassword, address, city, zip, phone);
+
+        myAccountPage = new MyAccountPage(driver);
+        softAssert.assertTrue(myAccountPage.lblMyAccountIsDisplayed());
+
+        softAssert.assertAll();
+    }
+
+    @Test(dependsOnMethods = {"testRegisterAccount"}, dataProvider = "purchase process data", dataProviderClass = ShoppingCartDataProvider.class)
+    public void testPurchasingProcess(String message) {
 
         SoftAssert softAssert = new SoftAssert();
 
         // 2. Sign in with an existing account
-        authenticationPage.fillLoginForm(email, password);
-        myAccountPage = new MyAccountPage(driver);
-        softAssert.assertTrue(myAccountPage.lblMyAccountIsDisplayed());
+        signInPage.fillLoginForm(formEmail, formPassword);
+
         // 3. Enter the women tab
+        myAccountPage = new MyAccountPage(driver);
         myAccountPage.clickOnWomenTab();
 
-        Object [][] shoopingCartProducts = new Object[maxProductsCart][3];
+        Object [][] shoopingCartProducts = new Object[MAX_PRODUCTS_CART][3];
 
-        for (int i = 0; i < maxProductsCart; i++) {
+        for (int i = 0; i < MAX_PRODUCTS_CART; i++) {
             categoryPage = new CategoryPage(driver);
             // 4. Enter the product detail
             categoryPage.mouseOverToProductItem(i);
@@ -65,7 +79,7 @@ public class ShoppingCart extends Base{
             productPage.changeProductQuantity();
             // 6. Check 4 images and change product size
             int sizeThumbProductImages = productPage.getSizeThumbProductImages();
-            softAssert.assertEquals(sizeThumbProductImages, expectedSizeThumbProductImages);
+            softAssert.assertEquals(sizeThumbProductImages, EXPECTED_SIZE_THUMB_PRODUCT_IMAGES);
             productPage.changeProductSize();
             // 7. Add product to shopping cart
             Object[] product = productPage.getDataProduct();
@@ -73,7 +87,7 @@ public class ShoppingCart extends Base{
                 shoopingCartProducts[i][j] = product[j];
             }
 
-            productPage.addProductToCart(i, maxProductsCart);
+            productPage.addProductToCart(i, MAX_PRODUCTS_CART);
         }
         // 8. Repeat the process 2 times according to the loop
 
@@ -83,12 +97,12 @@ public class ShoppingCart extends Base{
         // 10. Check shopping cart details
         orderPage = new OrderPage(driver);
 
-        Object [][] orderItems = orderPage.getDataProducts(maxProductsCart);
+        Object [][] orderItems = orderPage.getDataProducts(MAX_PRODUCTS_CART);
 
-        double expectedTotalProduct = refactorPrice(orderPage.getTextTotalProduct());
+        double expectedTotalProduct = Functions.refactorPrice(orderPage.getTextTotalProduct());
         double currentTotalProduct = 0;
-        for (int i = 0; i < maxProductsCart; i++) {
-            double totalItem = refactorPrice(orderItems[i][1].toString()) * Integer.parseInt(orderItems[i][2].toString());
+        for (int i = 0; i < MAX_PRODUCTS_CART; i++) {
+            double totalItem = Functions.refactorPrice(orderItems[i][1].toString()) * Integer.parseInt(orderItems[i][2].toString());
             currentTotalProduct = currentTotalProduct + totalItem;
 
             // 10.2 Verify that the unit price for each product is correct
@@ -106,13 +120,13 @@ public class ShoppingCart extends Base{
         softAssert.assertEquals(currentTotalProduct, expectedTotalProduct);
 
         // 10.4 Check that the total price is correct
-        double expectedTotalPrice = refactorPrice(orderPage.getTextTotalPrice());
+        double expectedTotalPrice = Functions.refactorPrice(orderPage.getTextTotalPrice());
         double currentTotalPrice = orderPage.getPriceSum();
         softAssert.assertEquals(currentTotalPrice, expectedTotalPrice);
 
         // 10.5 Check product counter text in the upper right
         String currentTextProductCounter = orderPage.getTextProductCounter();
-        softAssert.assertEquals(currentTextProductCounter, expectedTextProductCounter);
+        softAssert.assertEquals(currentTextProductCounter, EXPECTED_TEXT_PRODUCT_COUNTER);
 
         // 11. Do click on proceed to check out
         orderPage.goToProceedToCheckout();
@@ -128,9 +142,14 @@ public class ShoppingCart extends Base{
 
         // 15. Verify the successful transaction message
         String titleOrderConfirmation = orderPage.getTextOrderConfirmation();
-        softAssert.assertEquals(titleOrderConfirmation, expectedTextOrderConfirmation);
+        softAssert.assertEquals(titleOrderConfirmation, EXPECTED_TEXT_ORDER_CONFIRMATION);
 
         softAssert.assertAll();
+    }
+
+    @AfterMethod
+    public void afterMethod(){
+        mainPage.clickOnSignOut();
     }
 
     @AfterTest

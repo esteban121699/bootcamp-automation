@@ -11,6 +11,9 @@ public class MainPage {
     @FindBy(xpath = "//a[@title='Log in to your customer account']")
     private WebElement btnSignIn;
 
+    @FindBy(xpath = "//a[@title='Log me out']")
+    private WebElement btnSignOut;
+
     public final String url = "http://automationpractice.com/";
 
     public MainPage(WebDriver driver) {
@@ -24,5 +27,9 @@ public class MainPage {
 
     public void clickOnSignIn() {
         btnSignIn.click();
+    }
+
+    public void clickOnSignOut() {
+        btnSignOut.click();
     }
 }
