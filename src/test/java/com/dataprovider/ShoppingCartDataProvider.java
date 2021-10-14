@@ -5,7 +5,7 @@ import org.testng.annotations.DataProvider;
 
 public class ShoppingCartDataProvider {
 
-    int mailLength = 3;
+    int mailLength = 5;
     int passwordLength = 8;
     int zipLength = 5;
     int phoneLength = 9;
