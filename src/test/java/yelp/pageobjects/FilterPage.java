@@ -61,12 +61,12 @@ public class FilterPage extends PageObject {
 
         for (int i = 0; i < lastPage; i++) {
             String btnPageXpath = "//div[contains(@aria-label, 'Page: " + (i + 1) + "')]";
-            WebElement btnPage = withTimeoutOf(30, TimeUnit.SECONDS).find((By.xpath(btnPageXpath)));
+            WebElement btnPage = withTimeoutOf(40, TimeUnit.SECONDS).find((By.xpath(btnPageXpath)));
             btnPage.click();
         }
 
         int countLastPage = 0;
-        listRestaurants = withTimeoutOf(20, TimeUnit.SECONDS).findAll(By.xpath(lblRestaurantName));
+        listRestaurants = withTimeoutOf(40, TimeUnit.SECONDS).findAll(By.xpath(lblRestaurantName));
         for(WebElementFacade inputElement : listRestaurants){
             if(inputElement.getText().contains(".")){
                 countLastPage = countLastPage + 1;
